@@ -161,6 +161,15 @@ export class EventsService {
     ```
      */
   async getFutureEventWithWorkshops() {
-    throw new Error('TODO task 2');
+    // Couldn't finish this task properly because "includes" is not working in findMany
+    const events = await this.app.getDataSource().workshop.findMany()
+    const workshops = await this.app.getDataSource().workshop.findMany()
+    const eventsWithWorkshops = events.map(ev => ({
+      ...ev,
+      workshops: workshops.filter(ws => ws.eventId === ev.id)
+    }));
+    const futureEvents = eventsWithWorkshops.filter(ev => ev.workshops.length > 0 && ev.workshops.every(ws => ws.start.getTime() > Date.now()))
+    console.log({futureEvents})
+    return futureEvents;
   }
 }
