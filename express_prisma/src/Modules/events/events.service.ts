@@ -85,7 +85,13 @@ export class EventsService {
      */
 
   async getEventsWithWorkshops() {
-    throw new Error('TODO task 1');
+    const events = await this.app.getDataSource().event.findMany();
+    const workshops = await this.app.getDataSource().workshop.findMany();
+    const eventsWithWorkshops = events.map(ev => ({
+      ...ev,
+      workshops: workshops.filter(ws => ws.eventId === ev.id)
+    }));
+    return eventsWithWorkshops;
   }
 
   /* TODO: complete getFutureEventWithWorkshops so that it returns events with workshops, that have not yet started
