@@ -1,4 +1,7 @@
+import { MenuItem } from "@prisma/client";
 import App from "../../app";
+
+type MenuItemWithChildren = MenuItem & { children: Array<MenuItemWithChildren> }
 
 export class MenuItemsService {
   constructor(protected app: App) {}
@@ -78,7 +81,36 @@ export class MenuItemsService {
     ]
   */
 
+
+
+    buildMenuStructure = (menuItems: MenuItem[], parent: MenuItemWithChildren): any => {
+        menuItems.forEach(item => {
+            if (item.parentId === parent.id) {
+                parent.children?.push({
+                    ...item,
+                    children: []
+                })
+            }
+        })
+
+        let children = parent.children;
+
+        if (!children || children?.length === 0) {
+            return;
+        }
+
+
+        children.forEach(child => {
+            this.buildMenuStructure(menuItems, child)
+        })
+    }
+
+
   async getMenuItems() {
-    throw new Error('TODO in task 3');
+    const menuItems  = await this.app.getDataSource().menuItem.findMany();
+
+    const parentItem = {...menuItems.find(mi => mi.parentId === null), children: []} as MenuItemWithChildren;
+    this.buildMenuStructure(menuItems, parentItem)
+    return [parentItem];
   }
 }
